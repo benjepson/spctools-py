@@ -19,3 +19,12 @@ print("LCL:", result.lcl)
 print("URL:", result.url)
 print("Warnings:", result.warnings)
 print("Moving Ranges:", result.mr)
+
+# test the plot too
+import matplotlib.pyplot as plt
+#show the stored plot
+if result.plot:
+    result.plot.show()
+    plt.show(block=True) #for development testing, have it stay open
+else:
+    print("No plot available in output")

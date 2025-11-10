@@ -1,7 +1,9 @@
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Union, Optional
 from datetime import datetime
 import statistics
+import matplotlib.figure #create initial plot of baseline data used for calculations
+import matplotlib.pyplot as plt 
 
 # define the output of the xmr function
 @dataclass
@@ -33,6 +35,8 @@ class XmRResult:
     stdev: float
     # warnings of validation messages
     warnings: List[str]
+    # include a plot of the baseline data used for these calculations
+    plot: Optional[matplotlib.figure.Figure] = None
 
 # define function to calculate xmr
 def calculate_xmr(x, y, notes):
@@ -118,6 +122,30 @@ def calculate_xmr(x, y, notes):
     # NOT used in control charts, add to object for future capability calculations
     stdev = statistics.stdev(y)
 
+    # add a plot of the baseline data used for xmr calculations
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(x, y, marker='o', linestyle='-', label='Individual Values')
+    ax.axhline(mean, color='green', linestyle='--', label='Mean')
+    ax.axhline(ucl, color='red', linestyle='--', label='UCL')
+    ax.axhline(lcl, color='red', linestyle='--', label='LCL')
+
+    # Annotate any points outside control limits
+    for i, val in enumerate(y):
+        if val > ucl or val < lcl:
+            ax.annotate(f"{val:.0f}", (x[i], val), textcoords="offset points", xytext=(0,10), ha='center', color='red')
+
+    # include baseline data in the title
+    ax.set_title(f"XmR Chart From x={min(x)} to x={max(x)} MRbar: {mr_bar:.2f}")
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.legend()
+    ax.grid(True)
+
+    # Attach plot to result
+    plot = fig
+
+
     # return the results
     return XmRResult(
         timestamp=timestamp,
@@ -132,5 +160,6 @@ def calculate_xmr(x, y, notes):
         mr=mr,
         mr_bar=mr_bar,
         stdev=stdev,
-        warnings=warnings
+        warnings=warnings,
+        plot=plot
     )
